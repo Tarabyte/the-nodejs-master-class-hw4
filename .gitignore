@@ -1,2 +1,6 @@
 # do not publish local configs to avoid keys leaking
 .env.*.local.json
+
+# data folder
+.data
+.data-test
