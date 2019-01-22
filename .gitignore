@@ -4,3 +4,6 @@
 # data folder
 .data
 .data-test
+
+# certificates
+.https
