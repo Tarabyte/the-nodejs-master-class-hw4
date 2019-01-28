@@ -57,7 +57,7 @@ If step should run only for some specific environment it should have `.<NODE_ENV
 
 Data access layer (`app.db`) implements filesystem based id-value storage. Values are grouped into collections. Each collection contained in a separate directory to avoid id collisions.
 
-Adding collection `await app.db.addCollection({ name: 'collection'}`.
+Adding collection `await app.db.addCollection({ name: 'collection'})`.
 
 Collections are accessible by their capitalized names for example `app.db.Users`.
 
@@ -87,7 +87,7 @@ module.exports = async (app, config) => {
     await test(
       'Long running test',
       async () => {
-        // run long running job
+        // long running job
       },
       { timeout: 5000 }
     )
