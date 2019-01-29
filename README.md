@@ -73,9 +73,18 @@ Collection options
 
 - `test(name, fn, options?)` - runs a test implemented by `fn` function
 - `test.skip(name, fn, options?)` - skips current test
-- `test.module(name, fn)` - groups tests
+- `test.module(name, fn, { setup?, teardown?})` - groups tests with optional setup and teardown logic
 
 By default test should complete in 1 second. Normally tests should be faster than that. To extend timeout one could pass `options = { timeout: Expected Time To Complete The Test }`. Timeout override is for current test only.
+
+### TDD
+
+One could use `.bin/monitor` to rerun tests when code changes.
+
+```bash
+# rerun test matching order or stripe or mailgun pattern
+NODE_ENV=test node .bin/monitor --test="(order|stripe|mailun)"
+```
 
 For example
 
