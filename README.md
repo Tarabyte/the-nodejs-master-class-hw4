@@ -77,15 +77,6 @@ Collection options
 
 By default test should complete in 1 second. Normally tests should be faster than that. To extend timeout one could pass `options = { timeout: Expected Time To Complete The Test }`. Timeout override is for current test only.
 
-### TDD
-
-One could use `.bin/monitor` to rerun tests when code changes.
-
-```bash
-# rerun test matching order or stripe or mailgun pattern
-NODE_ENV=test node .bin/monitor --test="(order|stripe|mailun)"
-```
-
 For example
 
 ```javascript
@@ -115,6 +106,13 @@ To only run tests you are working on you could pass `--test=pattern` argument. T
 NODE_ENV=test node . --test=MailGun
 ```
 
-## API Description
+### TDD
 
-API Description goes here
+One could use `.bin/monitor` to rerun tests when code changes.
+
+```bash
+# rerun test matching order or stripe or mailgun pattern
+NODE_ENV=test node .bin/monitor --test="(order|stripe|mailun)"
+```
+
+## API Description
