@@ -115,4 +115,287 @@ One could use `.bin/monitor` to rerun tests when code changes.
 NODE_ENV=test node .bin/monitor --test="(order|stripe|mailun)"
 ```
 
-## API Description
+# API Description
+
+## Users collection
+
+### `POST /users` create new user
+
+**body** - json stringified object
+
+| Property | Type                                   | Description               |
+| -------- | -------------------------------------- | ------------------------- |
+| email    | required, unique, string, valid email  | Valid user email address. |
+| password | required, string, minimum 6 characters | User password.            |
+| name     | required, string, not empty            | User name.                |
+| address  | required, string, not empty            | User address.             |
+
+**Responses**
+
+| Code | Response                                | Description                                       |
+| ---- | --------------------------------------- | ------------------------------------------------- |
+| 200  | `{email, name, address, id}`            | Successful user creation                          |
+| 422  | `{message, details: { [field]: error}}` | Missing or invalid field(s) or email already used |
+| 500  | `{message}`                             | Unable to create user                             |
+
+---
+
+### `GET /users?id=:userId` get user by id
+
+**query** must include existing user email.
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**Responses**
+
+| Code | Response                          | Description                            |
+| ---- | --------------------------------- | -------------------------------------- |
+| 200  | `{email, name, address, id}`      | User object                            |
+| 401  | `{message}`                       | Missing or expired token               |
+| 422  | `{message, details: {id: error}}` | `query.id` is missing or invalid email |
+| 500  | `{message}`                       | Unable to get user                     |
+
+---
+
+### `PUT /users?id=:userId` update user by id
+
+**query** must include existing user email.
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**body** - json stringified object
+
+| Property | Type                                   | Description    |
+| -------- | -------------------------------------- | -------------- |
+| password | optional, string, minimum 6 characters | User password. |
+| name     | optional, string, not empty            | User name.     |
+| address  | optional, string, not empty            | User address.  |
+
+**Responses**
+
+| Code | Response                                | Description                            |
+| ---- | --------------------------------------- | -------------------------------------- |
+| 200  | `{email, name, address, id}`            | User object                            |
+| 401  | `{message}`                             | Missing or expired token               |
+| 403  | `{message}`                             | Token belongs to another userId        |
+| 422  | `{message, details: {id: error}}`       | `query.id` is missing or invalid email |
+| 422  | `{message, details: { [field]: error}}` | Invalid field(s)                       |
+| 422  | `{message }`                            | No fields to update                    |
+| 500  | `{message}`                             | Unable to update user                  |
+
+---
+
+### `DELETE /users?id=:userId` delete user by id
+
+**query** must include existing user email.
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**Responses**
+
+| Code | Response                          | Description                            |
+| ---- | --------------------------------- | -------------------------------------- |
+| 204  | empty                             | User successfully deleted              |
+| 401  | `{message}`                       | Missing or expired token               |
+| 403  | `{message}`                       | Token belongs to another userId        |
+| 422  | `{message, details: {id: error}}` | `query.id` is missing or invalid email |
+| 500  | `{message}`                       | Unable to delete user                  |
+
+---
+
+## Tokens collection
+
+### `POST /tokens` create new token
+
+**body** - json stringified object
+
+| Property | Type                                   | Description               |
+| -------- | -------------------------------------- | ------------------------- |
+| email    | required, unique, string, valid email  | Valid user email address. |
+| password | required, string, minimum 6 characters | User password.            |
+
+**Responses**
+
+| Code | Response                                | Description                 |
+| ---- | --------------------------------------- | --------------------------- |
+| 200  | `{userId, id, expires}`                 | New token                   |
+| 401  | `{message}`                             | User does not exist         |
+| 401  | `{message}`                             | Password does not match     |
+| 422  | `{message, details: { [field]: error}}` | Missing or invalid field(s) |
+| 500  | `{message}`                             | Unable to create token      |
+
+---
+
+### `GET /tokens?id=:tokenId` get token by id
+
+**query** must include existing token id.
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**Responses**
+
+| Code | Response                          | Description                      |
+| ---- | --------------------------------- | -------------------------------- |
+| 200  | `{email, name, address, id}`      | User object                      |
+| 401  | `{message}`                       | Missing or expired token         |
+| 403  | `{message}`                       | Token belongs to another user    |
+| 404  | `{message}`                       | Token with the id does not exist |
+| 422  | `{message, details: {id: error}}` | `query.id` is missing            |
+| 500  | `{message}`                       | Unable to get token              |
+
+---
+
+### `PUT /tokens?id=:tokenId` extend token expiration date by 1 hour
+
+**query** must include existing token id.
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**body** - json stringified object
+
+| Property | Type                    | Description          |
+| -------- | ----------------------- | -------------------- |
+| extend   | required, boolean, true | Flag to extend token |
+
+**Responses**
+
+| Code | Response                               | Description                      |
+| ---- | -------------------------------------- | -------------------------------- |
+| 200  | `{userId, id, expires}`                | Token object                     |
+| 400  | `{message}`                            | Extend value is not `true`       |
+| 401  | `{message}`                            | Missing or expired token         |
+| 403  | `{message}`                            | Token belongs to another userId  |
+| 404  | `{message}`                            | Token with the id does not exist |
+| 422  | `{message, details: {id: error}}`      | `query.id` is missing            |
+| 422  | `{message, details: { extend: error}}` | Invalid extend field value       |
+| 500  | `{message}`                            | Unable to update token           |
+
+---
+
+### `DELETE /token?id=:tokenId` delete token by id
+
+**query** must include existing token.
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**Responses**
+
+| Code | Response                          | Description                      |
+| ---- | --------------------------------- | -------------------------------- |
+| 204  | empty                             | Token successfully deleted       |
+| 401  | `{message}`                       | Missing or expired token         |
+| 403  | `{message}`                       | Token belongs to another userId  |
+| 404  | `{message}`                       | Token with the id does not exist |
+| 422  | `{message, details: {id: error}}` | `query.id` is missing            |
+| 500  | `{message}`                       | Unable to delete token           |
+
+---
+
+## Products Collection
+
+### `GET /products` get available products
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**Responses**
+
+| Code | Response                                | Description                 |
+| ---- | --------------------------------------- | --------------------------- |
+| 200  | `{ products: Array<{id, name, price}>}` | Products list               |
+| 401  | `{message}`                             | Missing or expired token    |
+| 500  | `{message}`                             | Unable to get products list |
+
+## Cart
+
+### `POST /cart` add item to cart
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**body** - json stringified object
+
+| Property  | Type                                                    | Description                |
+| --------- | ------------------------------------------------------- | -------------------------- |
+| productId | required, string, existing product id                   | Product id to add to cart. |
+| value     | required, positive, integer, greater then or equal to 1 | Amount of items to add     |
+
+**Responses**
+
+| Code | Response                                    | Description                    |
+| ---- | ------------------------------------------- | ------------------------------ |
+| 200  | `{items: Array<{productId, value, price}>}` | New cart state                 |
+| 401  | `{message}`                                 | Missing or expired token       |
+| 422  | `{message, details: { [field]: error}}`     | Missing or invalid field(s)    |
+| 500  | `{message}`                                 | Unable to update shopping cart |
+
+---
+
+### `DELETE /cart?productId=:productId` remove item from cart
+
+**query** must include existing product id.
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**Responses**
+
+| Code | Response                                    | Description                    |
+| ---- | ------------------------------------------- | ------------------------------ |
+| 200  | `{items: Array<{productId, value, price}>}` | New cart state                 |
+| 401  | `{message}`                                 | Missing or expired token       |
+| 422  | `{message, details: { productId: error}}`   | Missing or invalid field(s)    |
+| 500  | `{message}`                                 | Unable to update shopping cart |
+
+---
+
+### `GET /cart` get current user cart
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**Responses**
+
+| Code | Response                                    | Description                 |
+| ---- | ------------------------------------------- | --------------------------- |
+| 200  | `{items: Array<{productId, value, price}>}` | Cart state                  |
+| 401  | `{message}`                                 | Missing or expired token    |
+| 500  | `{message}`                                 | Unable to get shopping cart |
+
+---
+
+## Orders Collection
+
+### `POST /orders` create order for current shopping cart
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**body** - json stringified object
+
+| Property     | Type             | Description          |
+| ------------ | ---------------- | -------------------- |
+| paymentToken | required, string | Stripe payment token |
+
+**Responses**
+
+| Code | Response                                                        | Description                      |
+| ---- | --------------------------------------------------------------- | -------------------------------- |
+| 200  | `{ order: { userId, items: Array<{productId, value, price}>} }` | Created order                    |
+| 401  | `{message}`                                                     | Missing or expired token         |
+| 422  | `{message, details: { [field]: error}}`                         | Missing or invalid field(s)      |
+| 500  | `{message}`                                                     | Unable to update create an order |
+
+---
+
+### `GET /orders?id=:orderId` get current user orders or specific order
+
+**headers** must include authorization token `{token: 'TOKEN_ID'}`.
+
+**query** may include existing order id
+
+**Responses**
+
+| Code | Response                                                                                   | Description                                       |
+| ---- | ------------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| 200  | `{ order: {userId, items: Array<{productId, value, price}>} }` or `{orders: Array<Order>}` | Existing order or array of orders                 |
+| 401  | `{message}`                                                                                | Missing or expired token                          |
+| 404  | `{message}`                                                                                | Order with the `id` (if specified) does not exist |
+| 500  | `{message}`                                                                                | Unable to get order(s)                            |
+
+---
