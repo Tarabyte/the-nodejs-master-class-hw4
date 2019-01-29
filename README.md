@@ -316,7 +316,7 @@ NODE_ENV=test node .bin/monitor --test="(order|stripe|mailun)"
 | Property  | Type                                                    | Description                |
 | --------- | ------------------------------------------------------- | -------------------------- |
 | productId | required, string, existing product id                   | Product id to add to cart. |
-| value     | required, positive, integer, greater then or equal to 1 | Amount of items to add     |
+| value     | required, positive, integer, greater than or equal to 1 | Amount of items to add     |
 
 **Responses**
 
