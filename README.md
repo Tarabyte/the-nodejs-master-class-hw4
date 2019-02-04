@@ -270,7 +270,7 @@ NODE_ENV=test node .bin/monitor --test="(order|stripe|mailun)"
 
 ---
 
-### `DELETE /token?id=:tokenId` delete token by id
+### `DELETE /tokens?id=:tokenId` delete token by id
 
 **query** must include existing token.
 

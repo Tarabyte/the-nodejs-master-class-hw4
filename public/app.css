@@ -1,3 +1,78 @@
+:root {
+  --main-color: #1a1a1a;
+  --main-color-contrast: #fff;
+}
 body {
-  background-color: aqua;
+  margin: 0;
+  padding: 0;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.header {
+  height: 100px;
+  background: var(--main-color);
+  color: var(--main-color-contrast);
+}
+
+.header-root {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1em;
+}
+
+.header-logo {
+  height: 100px;
+  width: 100px;
+}
+
+.menu {
+  display: flex;
+}
+
+.menu > li {
+  list-style: none;
+  position: relative;
+}
+
+.menu > li:hover::after {
+  content: '';
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  height: 0.25em;
+  width: 100%;
+  background-color: var(--main-color-contrast);
+}
+
+.menu > li > a {
+  display: inline-block;
+  padding: 1em;
+  text-decoration: none;
+  text-transform: uppercase;
+  font-weight: 700;
+  color: inherit;
+}
+
+.main {
+  flex: 1;
+}
+
+.footer {
+  height: 60px;
+  background: var(--main-color);
+  color: var(--main-color-contrast);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.footer-root {
+  text-align: center;
 }

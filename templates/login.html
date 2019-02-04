@@ -1,0 +1,26 @@
+<h1>Login To Your Account</h1>
+<h2>Please enter your email and password</h2>
+
+<div class="form-container">
+  <form is="login-form" method="POST" action="/api/tokens">
+    <div class="form-error-message"></div>
+    <div class="form-control">
+      <label for="email">
+        Email
+      </label>
+      <input type="text" name="email" id="email" required />
+      <div class="form-control-error-message"></div>
+    </div>
+
+    <div class="form-control">
+      <label for="password">
+        Password
+      </label>
+      <input type="password" name="password" id="password" required />
+      <div class="form-control-error-message"></div>
+    </div>
+    <button type="submit">Log In</button>
+  </form>
+</div>
+
+<script type="module" src="/public/login-page.js"></script>

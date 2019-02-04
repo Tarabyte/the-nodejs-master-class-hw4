@@ -1,1 +1,15 @@
-This is header
+<div class="header-root">
+  <div class="header-left">
+    <a href="/">
+      <img
+        class="header-logo"
+        src="/public/logo.jpg"
+        alt="${data.config.appName}"
+      />
+    </a>
+  </div>
+  <div class="header-right">
+    ${helpers.include(data.req.user ? './menu.user.html' : './menu.anon.html',
+    data, helpers)}
+  </div>
+</div>

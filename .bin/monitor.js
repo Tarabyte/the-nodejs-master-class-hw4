@@ -66,6 +66,9 @@ const debounce = (fn, delay) => {
   }
 }
 
-watch('./lib', { recursive: true }, debounce(run, 100))
+// in test watch only lib to avoid infinite reloading due to templates compilation
+const watchDir = process.env.NODE_ENV === 'test' ? './lib' : './'
+
+watch(watchDir, { recursive: true }, debounce(run, 100))
 
 run()

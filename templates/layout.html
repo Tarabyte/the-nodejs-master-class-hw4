@@ -2,23 +2,21 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <title>${data.head.title}</title>
+    <title>${data.head.title} | ${data.config.appName}</title>
     <meta name="description" content="${data.head.description || ''}" />
     <link type="image/x-icon" rel="icon" href="/favicon.ico" />
     <link rel="stylesheet" href="/public/app.css" />
-    <script src="/public/app.js"></script>
+    <script type="module" src="/public/app.js"></script>
   </head>
-  <body>
-    <div id="app">
-      <header>
-        ${helpers.include('./partials/header.html', data, helpers)}
-      </header>
-      <main>
-        ${helpers.include(data.main, data, helpers)}
-      </main>
-      <footer>
-        ${helpers.include('./partials/footer.html', data, helpers)}
-      </footer>
-    </div>
+  <body class="app">
+    <header class="header">
+      ${helpers.include('./partials/header.html', data, helpers)}
+    </header>
+    <main class="main">
+      ${helpers.include(data.main, data, helpers)}
+    </main>
+    <footer class="footer">
+      ${helpers.include('./partials/footer.html', data, helpers)}
+    </footer>
   </body>
 </html>
