@@ -1,25 +1,36 @@
-<h1>Login To Your Account</h1>
-<h2>Please enter your email and password</h2>
-
 <div class="form-container">
+  <h1>Login To Your Account</h1>
   <form is="login-form" method="POST" action="/api/tokens">
+    <h2>Please enter your email and password</h2>
     <div class="form-error-message"></div>
     <div class="form-control">
-      <label for="email">
+      <label for="email" class="form-control-label">
         Email
       </label>
-      <input type="text" name="email" id="email" required />
+      <input
+        type="text"
+        name="email"
+        id="email"
+        class="form-control-input"
+        required
+      />
       <div class="form-control-error-message"></div>
     </div>
 
     <div class="form-control">
-      <label for="password">
+      <label for="password" class="form-control-label">
         Password
       </label>
-      <input type="password" name="password" id="password" required />
+      <input
+        type="password"
+        name="password"
+        id="password"
+        class="form-control-input"
+        required
+      />
       <div class="form-control-error-message"></div>
     </div>
-    <button type="submit">Log In</button>
+    <button type="submit" class="form-submit-button">Log In</button>
   </form>
 </div>
 
