@@ -75,13 +75,17 @@ class AjaxFormElement extends HTMLFormElement {
 
       this.classList.add('submitting')
 
+      const buttons = [...this.querySelectorAll('button[type=submit]')]
+      buttons.forEach(button => (button.disabled = true))
+
       try {
         const response = await this.request(data)
 
-        this[response.ok ? 'onOk' : 'onFail'](response, data)
+        await this[response.ok ? 'onOk' : 'onFail'](response, data)
       } catch (e) {
-        this.onNetworkFailure(e)
+        this.onGlobalFailure(e)
       } finally {
+        buttons.forEach(button => (button.disabled = false))
         this.classList.remove('submitting')
       }
     })
@@ -125,7 +129,7 @@ class AjaxFormElement extends HTMLFormElement {
 
   // handle errors
   onFail(response) {
-    of(response.data)
+    Maybe.of(response.data)
       .then(({ message, details }) => {
         this.setError(message)
         return details
@@ -133,7 +137,7 @@ class AjaxFormElement extends HTMLFormElement {
       .then(details => {
         // set individual errors
         Object.entries(details).forEach(([fieldName, message]) => {
-          of(this.querySelector(`[name=${fieldName}]`))
+          Maybe.of(this.querySelector(`[name=${fieldName}]`))
             .then(field => field.closest('.form-control'))
             .then(control =>
               control.querySelector('.form-control-error-message')
@@ -143,14 +147,14 @@ class AjaxFormElement extends HTMLFormElement {
       })
   }
 
-  // handle if was not able to hit the server
-  onNetworkFailure(e) {
-    this.setError(e.toString())
+  // handle if was not able to hit the server or impl failed
+  onGlobalFailure(e) {
+    alert(e.toString())
   }
 
   // set error message if container is available
   setError(text) {
-    of(this.querySelector('.form-error-message')).then(
+    Maybe.of(this.querySelector('.form-error-message')).then(
       el => (el.textContent = text)
     )
   }
@@ -207,18 +211,27 @@ async function callAPI(endpoint, options) {
 }
 
 // maybe impl for poor :)
-const of = value => (value == null ? nothing() : just(value))
+const Maybe = {
+  of(value) {
+    return value == null ? Maybe.nothing() : Maybe.just(value)
+  },
 
-const nothing = () => ({
-  then(fn) {
-    return this
+  nothing() {
+    return {
+      then() {
+        return this
+      },
+    }
   },
-})
-const just = value => ({
-  then(fn) {
-    return of(fn(value))
+
+  just(value) {
+    return {
+      then(fn) {
+        return Maybe.of(fn(value))
+      },
+    }
   },
-})
+}
 
 export default app
 
