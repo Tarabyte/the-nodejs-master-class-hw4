@@ -1,0 +1,90 @@
+<div class="form-container">
+  <h1>
+    Hello, ${data.req.user.name}!
+  </h1>
+  <!-- url ${helpers.local('url', helpers.url`/api/users?id=${data.req.user.email}`)}-->
+  <form is="edit-profile-form" method="PUT" action="${helpers.local('url')}">
+    <h2>Edit profile info</h2>
+    <div class="form-error-message"></div>
+    <div class="form-control">
+      <label for="name" class="form-control-label">
+        Name
+      </label>
+      <input
+        type="text"
+        name="name"
+        id="name"
+        class="form-control-input"
+        required
+        value="${data.req.user.name}"
+        autocomplete="name"
+      />
+      <div class="form-control-error-message"></div>
+    </div>
+
+    <div class="form-control">
+      <label for="address" class="form-control-label">
+        Address
+      </label>
+      <textarea
+        name="address"
+        id="address"
+        class="form-control-input"
+        required
+        autocomplete="address-line1"
+      >
+${data.req.user.address}</textarea
+      >
+      <div class="form-control-error-message"></div>
+    </div>
+    <button type="submit" class="form-submit-button">Save</button>
+  </form>
+
+  <form is="change-password-form" method="PUT" action="${helpers.local('url')}">
+    <h2>Change password</h2>
+    <div class="form-error-message"></div>
+    <div class="form-success-message"></div>
+    <div class="form-control">
+      <label for="password" class="form-control-label">
+        New Password
+      </label>
+      <input
+        type="password"
+        name="password"
+        id="password"
+        class="form-control-input"
+        required
+        autocomplete="new-password"
+      />
+      <div class="form-control-error-message"></div>
+    </div>
+    <div class="form-control">
+      <label for="password2" class="form-control-label">
+        Repeat Password
+      </label>
+      <input
+        type="password"
+        name="password2"
+        id="password2"
+        class="form-control-input"
+        autocomplete="new-password"
+        required
+      />
+      <div class="form-control-error-message"></div>
+    </div>
+    <button type="submit" class="form-submit-button">Change Password</button>
+  </form>
+  <hr />
+  <h1 class="danger-zone">Danger zone</h1>
+  <form
+    is="delete-profile-form"
+    method="DELETE"
+    action="${helpers.local('url')}"
+  >
+    <div class="form-error-message"></div>
+    <button type="submit" class="form-submit-button form-submit-button__danger">
+      Permanently Delete My Account
+    </button>
+  </form>
+</div>
+<script type="module" src="/public/profile-page.js"></script>

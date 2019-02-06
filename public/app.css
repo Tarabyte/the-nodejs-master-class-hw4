@@ -3,6 +3,8 @@
   --main-color-contrast: #fff;
   --error-color: #cc0033;
   --error-lighten-color: #fce4e4;
+  --success-color: #3ac162;
+  --success-lighten-color: #bdf7cf;
 }
 
 *,
@@ -44,6 +46,7 @@ body {
 
 .menu {
   display: flex;
+  align-items: center;
 }
 
 .menu > li {
@@ -105,7 +108,8 @@ body {
   filter: grayscale(50%) blur(2px);
 }
 
-.form-error-message:empty {
+.form-error-message:empty,
+.form-success-message:empty {
   display: none;
 }
 
@@ -113,6 +117,16 @@ body {
   border: 2px solid var(--error-color);
   background-color: var(--error-lighten-color);
   color: var(--error-color);
+  font-size: 1.5em;
+  margin-bottom: 1.5rem;
+  padding: 0.5em;
+  font-weight: 600;
+}
+
+.form-success-message {
+  border: 2px solid var(--success-color);
+  background-color: var(--success-lighten-color);
+  color: var(--success-color);
   font-size: 1.5em;
   margin-bottom: 1.5rem;
   padding: 0.5em;
@@ -157,6 +171,11 @@ body {
   margin-bottom: 10px;
 }
 
+.form-submit-button__danger {
+  background-color: var(--error-color);
+  border-color: var(--error-lighten-color);
+}
+
 .form-control-error-message {
   color: var(--error-color);
   font-size: 14px;
@@ -165,6 +184,10 @@ body {
 }
 
 /* Logout */
+.logout-form {
+  display: inline-block;
+}
+
 .logout-button-link {
   font-size: inherit;
   color: inherit;
@@ -172,5 +195,12 @@ body {
   background: transparent;
   cursor: pointer;
   font-weight: 700;
+  font-family: inherit;
   text-transform: uppercase;
+  padding: 1em;
+}
+
+/*Profile*/
+.danger-zone {
+  color: var(--error-color);
 }

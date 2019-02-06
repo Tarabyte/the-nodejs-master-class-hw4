@@ -1,11 +1,82 @@
 /**
  * Application wide logic
  */
+const delay = ms => new Promise(r => setTimeout(r, ms))
+const minute = 60 * 1000
+const MAX_RETRIES = 3
+const tokenExtendInterval = 1 * minute
+const retryIn = () => minute * (0.25 + 0.75 * Math.random())
+const extendToken = async (retry = 0) => {
+  const { token } = app
+
+  // stop if no token
+  if (!token) {
+    return
+  }
+
+  try {
+    // extend token on server
+    const { ok, data, status } = await callAPI('/api/tokens', {
+      query: { id: token },
+      method: 'PUT',
+      data: {
+        extend: true,
+      },
+    })
+
+    // unable to extend data
+    if (!ok) {
+      console.warn('Failed to extend token', status, data)
+      const error = new Error('Failed to extend token')
+      error.status = status
+
+      throw error
+    }
+
+    // wait some time
+    await delay(tokenExtendInterval)
+
+    // start over
+    return extendToken(0)
+  } catch (e) {
+    const shouldRetry =
+      retry < MAX_RETRIES && ![401, 403, 500].includes(e.status)
+
+    if (shouldRetry) {
+      console.warn(`Retrying token extend ${retry}`)
+      // wait some random delay
+      await delay(retryIn())
+
+      return extendToken(retry + 1)
+    }
+
+    console.error(
+      'Unable to extend token.',
+      `Retried ${retry} times. Error status code ${e.status || 0}.`
+    )
+  }
+}
+
 const app = {
   get token() {
     return window.sessionStorage.getItem('token')
   },
 
+  set token(token) {
+    if (token) {
+      // persist token locally
+      window.sessionStorage.setItem('token', token)
+      // set cookie to enable authenticated document requests
+      document.cookie = `token=${encodeURIComponent(token)}`
+    } else {
+      // clean storage
+      window.sessionStorage.removeItem('token')
+      // and cookie by setting it to be expired
+      document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    }
+  },
+
+  // log in using credentials
   async logIn(credentials) {
     const result = await callAPI('/api/tokens', {
       method: 'POST',
@@ -17,18 +88,16 @@ const app = {
       return result
     }
 
-    // get token
-    const { id: token } = result.data
+    // save token
+    app.token = result.data.id
 
-    // persist token locally
-    window.sessionStorage.setItem('token', token)
-
-    // set cookie to enable authenticated document requests
-    document.cookie = `token=${encodeURIComponent(token)}`
+    // run token extending loop
+    extendToken()
 
     return result
   },
 
+  // log current user out
   async logOut() {
     const { token } = app
 
@@ -45,12 +114,15 @@ const app = {
       return result
     }
 
-    // clean storage
-    window.sessionStorage.removeItem('token')
-    // and cookie by setting it to be expired
-    document.cookie = 'token=; expires=Thu, 01 Jan 1970 00:00:00 GMT'
+    // clear token
+    app.token = null
 
     return result
+  },
+
+  // boot application
+  bootstrap() {
+    extendToken()
   },
 }
 
@@ -65,30 +137,52 @@ class AjaxFormElement extends HTMLFormElement {
       // do not process to normal submit
       e.preventDefault()
 
-      // collect data
-      const data = [...this.entries()].reduce(
-        (acc, [name, value]) => ((acc[name] = value), acc),
-        Object.create(null)
-      )
-
       this.clearErrors()
 
       this.classList.add('submitting')
 
+      // disable buttons
       const buttons = [...this.querySelectorAll('button[type=submit]')]
       buttons.forEach(button => (button.disabled = true))
 
       try {
+        let data = null
+        try {
+          data = this.getData()
+        } catch (e) {
+          // process validation errors
+          if (e instanceof ValidationError) {
+            return this.setError(e.message, e.details)
+          }
+
+          throw e
+        }
+
         const response = await this.request(data)
 
         await this[response.ok ? 'onOk' : 'onFail'](response, data)
       } catch (e) {
         this.onGlobalFailure(e)
       } finally {
-        buttons.forEach(button => (button.disabled = false))
         this.classList.remove('submitting')
+
+        // enable buttons
+        buttons.forEach(button => (button.disabled = false))
       }
     })
+  }
+
+  /**
+   * Override method
+   */
+  get method() {
+    const method = this.getAttribute('method')
+
+    if (!method) {
+      return 'get'
+    }
+
+    return method.toLowerCase()
   }
 
   /**
@@ -117,8 +211,14 @@ class AjaxFormElement extends HTMLFormElement {
     return callAPI(action, options)
   }
 
-  // Process data before sending it to server
-  processData(data) {
+  // Collect data before sending to server
+  getData() {
+    // collect data
+    const data = [...this.entries()].reduce(
+      (acc, [name, value]) => ((acc[name] = value), acc),
+      Object.create(null)
+    )
+
     return data
   }
 
@@ -129,22 +229,9 @@ class AjaxFormElement extends HTMLFormElement {
 
   // handle errors
   onFail(response) {
-    Maybe.of(response.data)
-      .then(({ message, details }) => {
-        this.setError(message)
-        return details
-      })
-      .then(details => {
-        // set individual errors
-        Object.entries(details).forEach(([fieldName, message]) => {
-          Maybe.of(this.querySelector(`[name=${fieldName}]`))
-            .then(field => field.closest('.form-control'))
-            .then(control =>
-              control.querySelector('.form-control-error-message')
-            )
-            .then(errorEl => (errorEl.textContent = message))
-        })
-      })
+    Maybe.of(response.data).then(({ message, details }) =>
+      this.setError(message, details)
+    )
   }
 
   // handle if was not able to hit the server or impl failed
@@ -153,10 +240,22 @@ class AjaxFormElement extends HTMLFormElement {
   }
 
   // set error message if container is available
-  setError(text) {
+  setError(text, details) {
     Maybe.of(this.querySelector('.form-error-message')).then(
       el => (el.textContent = text)
     )
+
+    Maybe.of(details).then(details => {
+      // set individual errors
+      Object.entries(details).forEach(([fieldName, message]) => {
+        Maybe.of(this.querySelector(`[name=${fieldName}]`)) // find field
+          .then(field => field.closest('.form-control')) // find its control
+          .then(
+            control => control.querySelector('.form-control-error-message') // find error message placeholder
+          )
+          .then(errorEl => (errorEl.textContent = message))
+      })
+    })
   }
 
   clearErrors() {
@@ -233,6 +332,19 @@ const Maybe = {
   },
 }
 
-export default app
+// validation exception
+class ValidationError extends Error {
+  constructor(message, details) {
+    super(message)
 
-export { AjaxFormElement, callAPI }
+    this.message = message
+    this.details = details
+  }
+}
+
+// boot the app
+app.bootstrap()
+
+// export app and stuff
+export default app
+export { AjaxFormElement, callAPI, Maybe, ValidationError }
