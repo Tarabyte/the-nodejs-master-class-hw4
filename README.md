@@ -36,10 +36,14 @@ For example to configure application to run in production mode one need to creat
 | cert        | Required, String | path to cert file                                                                                      |
 | **stripe**  | Optional         | Stripe configuration options. Contains sensetive information. Should be placed in local configs only.  |
 | key         | Required, String | Stripe API secret key                                                                                  |
+| publicKey   | Required, Strint | Stripe API public key                                                                                  |
 | **mailgun** | Optional         | MailGun configuration options. Contains sensetive information. Should be placed in local configs only. |
 | key         | Required, String | MailGun API secret key                                                                                 |
 | domain      | Required, String | MailGun domain                                                                                         |
 | from        | Optional, String | Default from value for messages. Format `Name <email>`                                                 |
+| **web**     | Optional         | Web client configuration                                                                               |
+| appName     | String           | Application name                                                                                       |
+| year        | Number           | Copyright year                                                                                         |
 
 ## Development
 
