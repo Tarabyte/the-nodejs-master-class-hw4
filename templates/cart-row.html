@@ -1,0 +1,18 @@
+<tr>
+  <td>${item.product.name}</td>
+  <td>${item.value}</td>
+  <td>$ ${item.price}</td>
+  <td>$ ${item.price * item.value}</td>
+  <td>
+    <form is="cart-actions-form" action="/api/cart">
+      <input type="hidden" name="productId" value="${item.productId}" />
+      <input type="hidden" name="value" value="${item.value}" />
+      <input type="hidden" name="action" />
+      <button is="cart-action-button" type="submit" action="add">+</button>
+      <button is="cart-action-button" type="submit" action="remove">-</button>
+      <button is="cart-action-button" type="submit" action="clear">
+        Delete
+      </button>
+    </form>
+  </td>
+</tr>

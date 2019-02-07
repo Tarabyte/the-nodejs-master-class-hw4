@@ -1,0 +1,73 @@
+<div class="table-container">
+  <h1>Shopping Cart</h1>
+  <table is="shopping-cart-table" src="/api/cart" class="table">
+    <thead>
+      <tr>
+        <th>Pizza</th>
+        <th>Amount</th>
+        <th>Price</th>
+        <th>Total</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      <template name="row">
+        ${helpers.inject('cart-row.html')}
+      </template>
+      <template name="empty">
+        <tr class="table-row__empty">
+          <td colspan="5">
+            The cart is empty. Please select some pizzas below.
+          </td>
+        </tr>
+      </template>
+      <template name="error">
+        <tr>
+          <td colspan="5" class="table-loading-error">
+            Unable to load shopping cart
+          </td>
+        </tr>
+      </template>
+    </tbody>
+    <tbody>
+      <template name="list">
+        ${helpers.inject('cart-total.html')}
+      </template>
+    </tbody>
+    <tbody>
+      <template name="list">
+        ${helpers.inject('cart-checkout-row.html')}
+      </template>
+    </tbody>
+  </table>
+
+  <h2>Pizzas</h2>
+
+  <table is="products-table" src="/api/products" class="table">
+    <thead>
+      <tr>
+        <th>Pizza</th>
+        <th>Price</th>
+        <th>Add</th>
+      </tr>
+    </thead>
+    <tbody>
+      <template name="row">
+        ${helpers.inject('cart-products-row.html')}
+      </template>
+      <template name="empty">
+        <tr>
+          <td colspan="3">Ooups! No products available. Sorry.</td>
+        </tr>
+      </template>
+      <template name="error">
+        <tr>
+          <td colspan="3" class="table-loading-error">
+            Unable to load products
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+</div>
+<script type="module" src="/public/cart-page.js"></script>

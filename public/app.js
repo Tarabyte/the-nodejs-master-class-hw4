@@ -173,19 +173,6 @@ class AjaxFormElement extends HTMLFormElement {
   }
 
   /**
-   * Override method
-   */
-  get method() {
-    const method = this.getAttribute('method')
-
-    if (!method) {
-      return 'get'
-    }
-
-    return method.toLowerCase()
-  }
-
-  /**
    * Extract name value pairs from nested fields
    */
   *entries() {
@@ -201,7 +188,9 @@ class AjaxFormElement extends HTMLFormElement {
 
   // make a request
   request(data) {
-    const { method, action } = this
+    // use get attribute instead of getters to avoid DOM convetion to put named elements as props
+    const method = this.getAttribute('method')
+    const action = this.getAttribute('action')
 
     const options = {
       method,
@@ -268,7 +257,173 @@ class AjaxFormElement extends HTMLFormElement {
   }
 }
 
-// call api endpoin
+const cloneTemplate = (node, tmpl) =>
+  node.appendChild(tmpl.content.cloneNode(true))
+
+// compile template unescape
+const entities = { gt: '>', lt: '<', amp: '&', quot: "'" }
+const unescape = str =>
+  str.replace(/&(gt|lt|amp|quot);/g, (_, $1) => entities[$1])
+const compileTemplate = (tmpl, ...args) =>
+  new Function(...args, `return \`${unescape(tmpl.innerHTML)}\``)
+
+/**
+ * Dynamic loading table component
+ */
+class AjaxTableElement extends HTMLTableElement {
+  // remote url to load data from
+  get src() {
+    return this.getAttribute('src')
+  }
+
+  // load data on connect
+  connectedCallback() {
+    if (this.isConnected) {
+      this.loadData()
+    }
+  }
+
+  reload() {
+    this.loadData()
+  }
+
+  async loadData() {
+    try {
+      // mark table as loading
+      this.classList.add('loading')
+
+      const { ok, data } = await callAPI(this.src, { method: 'get' })
+
+      if (!ok) {
+        throw data
+      }
+
+      const list = this.getList(data)
+
+      // render rows or empty
+      if (list.length) {
+        this.applyTemplate('row', (node, tmpl) => {
+          const compiled = compileTemplate(tmpl, 'item')
+
+          // append all rows at once
+          node.insertAdjacentHTML('beforeEnd', list.map(compiled).join(''))
+        })
+      } else {
+        this.applyTemplate('empty', cloneTemplate)
+      }
+
+      // render totals or other templates
+      this.applyTemplate('list', (node, tmpl) => {
+        const compiled = compileTemplate(tmpl, 'list')
+
+        node.insertAdjacentHTML('beforeEnd', compiled(list))
+      })
+    } catch (e) {
+      this.applyTemplate('error', cloneTemplate)
+    } finally {
+      this.classList.remove('loading')
+    }
+  }
+
+  // get list from server response
+  getList(responseData) {
+    // return response itself if it is array
+    if (Array.isArray(responseData)) {
+      return responseData
+    }
+
+    // or pick first array value
+    for (const value of Object.values(responseData)) {
+      if (Array.isArray(value)) {
+        return value
+      }
+    }
+
+    throw new Error('Unable to extract list from data')
+  }
+
+  applyTemplate(name, fn) {
+    const templates = this.querySelectorAll(`template[name=${name}]`)
+    if (!templates.length) {
+      return
+    }
+
+    ;[...templates].forEach(tmpl => {
+      const { parentNode } = tmpl
+
+      // remove previously rendered content other than templates
+      ;[...parentNode.children]
+        .filter(child => child.localName !== 'template')
+        .forEach(child => parentNode.removeChild(child))
+
+      // apply fn
+      fn(parentNode, tmpl)
+    })
+  }
+}
+
+// implements conditinal template rendering
+class DomIfElement extends HTMLElement {
+  static get observedAttributes() {
+    return ['check']
+  }
+
+  get check() {
+    const value = this.getAttribute('check')
+
+    return JSON.parse(value)
+  }
+
+  constructor(...args) {
+    super(...args)
+    this._template = this.firstElementChild
+    this._shadowRoot = this.attachShadow({ mode: 'open' })
+  }
+
+  connectedCallback() {
+    this._render()
+  }
+
+  attributeChangedCallback() {
+    this._render()
+  }
+
+  _render() {
+    const { check, _template, _shadowRoot } = this
+
+    _shadowRoot.innerHTML = ''
+
+    if (check) {
+      cloneTemplate(_shadowRoot, _template)
+    }
+  }
+}
+
+customElements.define('dom-if', DomIfElement)
+
+// implements declarative api calls
+class CallAPI extends HTMLElement {
+  get src() {
+    return this.getAttribute('src')
+  }
+
+  constructor(...args) {
+    super(...args)
+    this._template = compileTemplate(this.firstElementChild, 'response')
+  }
+
+  async connectedCallback() {
+    const { src, method = 'get', insert = 'beforeEnd', _template } = this
+
+    const result = await callAPI(src, { method })
+
+    this.insertAdjacentHTML(insert, _template(result))
+  }
+}
+
+customElements.define('call-api', CallAPI)
+
+// call api endpoint
 async function callAPI(endpoint, options) {
   const { method = 'GET', data, headers = {}, query } = options
 
@@ -347,4 +502,12 @@ app.bootstrap()
 
 // export app and stuff
 export default app
-export { AjaxFormElement, callAPI, Maybe, ValidationError }
+export {
+  AjaxFormElement,
+  AjaxTableElement,
+  DomIfElement,
+  CallAPI,
+  callAPI,
+  Maybe,
+  ValidationError,
+}

@@ -1,0 +1,38 @@
+<div class="table-container">
+  <h1>Orders List</h1>
+  <table is="orders-table" src="/api/orders" class="table">
+    <thead>
+      <tr>
+        <th>Order Id</th>
+        <th>Date</th>
+        <th>Price</th>
+        <th>Paid</th>
+      </tr>
+    </thead>
+    <tbody>
+      <template name="row">
+        ${helpers.inject('./orders-row.html')}
+      </template>
+      <template name="empty">
+        <tr>
+          <td colspan="4">
+            <h3>No orders so far</h3>
+            <a href="/cart" class="nav-link">Go to shopping cart</a>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+    <tbody>
+      <template name="list">
+        <tr>
+          <td colspan="4">
+            <h3>Buy more pizza!</h3>
+            <a href="/cart" class="nav-link">Go to shopping cart</a>
+          </td>
+        </tr>
+      </template>
+    </tbody>
+  </table>
+</div>
+
+<script type="module" src="/public/orders-page.js"></script>

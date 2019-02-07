@@ -1,0 +1,25 @@
+<div class="form-container">
+  <h1>Checkout</h1>
+  <call-api src="/api/cart">
+    <template>
+      <form is="checkout-form" action="/api/orders" method="POST" class="form">
+        <h2>Payment Information</h2>
+        <div class="form-error-message"></div>
+        <div class="form-success-message"></div>
+        <div class="form-control">
+          <label for="card-element" class="form-control-label">
+            Credit or debit card
+          </label>
+          <div class="form-control-input">
+            <stripe-card api-key="${data.config.stripeApiPK}"></stripe-card>
+          </div>
+        </div>
+        <button type="submit" class="form-submit-button">
+          Pay $ \${response.data.items.reduce(((total, item) => total +
+          item.price*item.value),0)}
+        </button>
+      </form>
+    </template>
+  </call-api>
+</div>
+<script type="module" src="/public/checkout-page.js"></script>

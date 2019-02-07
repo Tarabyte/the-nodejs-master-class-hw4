@@ -1,0 +1,14 @@
+<tr>
+  <td>${item.name}</td>
+  <td>$ ${item.price}</td>
+  <td>
+    <form
+      is="add-to-cart-form"
+      method="PATCH"
+      action="${`/api/cart?productId=${item.id}`}"
+    >
+      <input type="number" hidden name="value" value="1" />
+      <button type="submit">+</button>
+    </form>
+  </td>
+</tr>

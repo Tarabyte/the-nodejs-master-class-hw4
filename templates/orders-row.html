@@ -1,0 +1,8 @@
+<tr>
+  <td>${item._id}</td>
+  <td>${(new Date(item.createdAt)).toLocaleString()}</td>
+  <td>
+    $${item.items.reduce((total, item) => total + item.price*item.value,0)}
+  </td>
+  <td>${item.payment ? 'Paid' : 'Not Paid'}</td>
+</tr>
