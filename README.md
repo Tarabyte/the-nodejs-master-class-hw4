@@ -20,7 +20,55 @@ This is an open-ended assignment. You can take any direction you'd like to go wi
 
 ## CLI Commands
 
-Commands list goes here
+### Manual
+
+`help`, `man`, or `?` - prints all available commands
+
+`help <command>` - prints command help
+
+### Quit
+
+`quit`, `exit` - stops application
+
+`quit --q`, `quit --quiet` - quits without confirmation
+
+### Product Management
+
+`products` - enters interactive product management
+
+Available options
+
+`list` - List all products
+
+`info <name>` - Show product info by name
+
+`add` - Interactive add new product
+
+`quit` - Quit products management mode
+
+### Users Management
+
+`users` - enters interactive users management
+
+Available options
+
+`recent` - Show recent users
+
+`info <email>` - Show user info by email
+
+`quit` - Quit users management mode
+
+### Orders Management
+
+`orders` - enters interactive orders management
+
+Available options
+
+`recent` - Show recent orders
+
+`info <id>` - Show order info by id
+
+`quit` - Quit orders management mode
 
 ## Configuration
 
